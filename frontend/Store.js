@@ -160,6 +160,7 @@ class Store extends EventEmitter {
     this._bridge.on('mount', (data) => this._mountComponent(data));
     this._bridge.on('update', (data) => this._updateComponent(data));
     this._bridge.on('unmount', id => this._unmountComponent(id));
+    this._bridge.on('sendPropsForCopy', value => this._sendPropsForCopy(value));
     this._bridge.on('setInspectEnabled', (data) => this.setInspectEnabled(data));
     this._bridge.on('select', ({id, quiet, offsetFromLeaf = 0}) => {
       // Backtrack if we want to skip leaf nodes
@@ -214,8 +215,8 @@ class Store extends EventEmitter {
     copy(name);
   }
 
-  copyNodeProps(props: Object): void {
-    copy(serializePropsForCopy(props));
+  copyNodeProps(id: ElementID): void {
+    this._bridge.send('getPropsForCopy', id);
   }
 
   setSelectedTab(name: string): void {
@@ -701,6 +702,10 @@ class Store extends EventEmitter {
     if (node) {
       this._nodesByName = this._nodesByName.set(node.get('name'), this._nodesByName.get(node.get('name')).delete(id));
     }
+  }
+
+  _sendPropsForCopy(props: string) {
+    copy(props);
   }
 }
 
